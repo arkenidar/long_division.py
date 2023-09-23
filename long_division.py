@@ -7,7 +7,13 @@ Long division.
 def format_number(digits, dividend, dividend_list):
     '''
     Formats a number for printing.
+    
+    result: 0.|076923| 076923 <- (current) wrong formatting for 10/13
+    should be perhaps: |0.76923| <- correction is planned
+
     '''
+
+    repeating=""
 
     out = str(digits[0])
     repeating_digits_count = len(dividend_list)-dividend_list.index(dividend)
@@ -32,23 +38,75 @@ def format_number(digits, dividend, dividend_list):
         if out_postdot != '':
             out += '.' + out_postdot
 
-    return out
+    return out, repeating
 
 def divide_without_repetition(dividend, divisor):
     ''' a/b , divide avoiding repetition '''
-    dividend_list = []
-    digits = []
+    dividend_list = [0]
+    digits = [0]
     while True:
-        if dividend in dividend_list:
-            break
-        else:
-            dividend_list += [dividend]
-            digits += [dividend // divisor]
-            dividend = dividend % divisor
-            dividend = dividend * 10
+        if dividend in dividend_list: break
+        dividend_list += [dividend]
+        digits += [dividend // divisor]
+        dividend = dividend % divisor
+        dividend = dividend * 10
     return format_number(digits, dividend, dividend_list)
 
+def is_prime_by_field_checks(field_of):
 
+    if field_of==0: return False
+    if field_of==1: return False
+
+    if field_of==2: return True
+    if field_of==3: return True
+    if field_of==5: return True
+
+    repeating_is_same_lenght_checker=0
+    for number_iterated in range(1,field_of):
+
+        _,repeating = divide_without_repetition(number_iterated, field_of)
+
+        # debugging
+        ##print(repeating, number_iterated, field_of)
+
+        if repeating_is_same_lenght_checker == 0 :
+            repeating_is_same_lenght_checker = len(repeating)
+        if len(repeating) != repeating_is_same_lenght_checker :
+            ##print("different lenght")
+            return False
+        
+        if (int(repeating) % 9) != 0 :
+            ##print("not divisible by nine")
+            return False
+        
+    return True
+
+def prime_check(field_of):
+    #field_of = 91 # 13 # int(input('field of? (integer number) '))
+    is_prime = is_prime_by_field_checks(field_of)
+    if is_prime : print("[[" + str(field_of) + "]] is a prime number!")
+    else: print("not a prime number!")
+
+def prime_listing():
+    try:
+        primes_found = []
+        checked_number = 0
+        #stop_at = 100 # wrongly behaving with this limit
+        stop_at = 10 # decently behaving with this limit
+        while len(primes_found) != stop_at:
+
+            print(".",sep="",end="")
+
+            if is_prime_by_field_checks(checked_number):
+                primes_found += [checked_number]
+                print(checked_number, len(primes_found))
+            
+            checked_number += 1
+
+        print(primes_found)
+
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt: now exiting.")
 
 def main():
     '''
@@ -76,9 +134,25 @@ def main():
         print(str(dividend)+'/'+str(divisor)+' =', divide_without_repetition(dividend, divisor))
 
     while True:
-        dividend = int(input('dividend? '))
-        divisor = int(input('divisor? '))
-        print('result:', divide_without_repetition(dividend, divisor))
+        try:
+            dividend = int(input('dividend? '))
+            divisor = int(input('divisor? '))
+        except ValueError:
+            print("ValueError: now exiting.")
+            break
+        result,repeating = divide_without_repetition(dividend, divisor)
+        print('result:', result, repeating)
+
+def main_for_cases_to_correct():
+    # special case with errors, partially fixed see comment above
+    result,repeating = divide_without_repetition(10, 13)
+    print('result:', result, repeating)
+
+    prime_check(91) # wrongly considered prime
+
+    prime_listing() # not properly working, see above, plus it ceases to list, it stops finding primes
 
 if __name__ == '__main__':
     main()
+    main_for_cases_to_correct()
+
